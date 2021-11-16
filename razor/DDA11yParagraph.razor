@@ -1,0 +1,30 @@
+@inject IJSRuntime JSRuntime
+<div class="row align-items-start">
+    <p class="col-11" @ref="p">
+       @content
+    </p>
+    <button class="btn btn-primary oi oi-bullhorn col-1" @onclick="ReadP" aria-hidden="true" />
+</div>
+@code {
+
+    [Parameter]
+    public string content { get; set; }
+    private string infoFromJs;
+    private ElementReference p;
+
+    FutureWeb.Services.CSSpeechService speech = new Services.CSSpeechService();
+
+    private async Task<bool> ReadP()
+    {
+        await ReadAloud(p);
+        return true;
+    }
+
+    private async Task<bool> ReadAloud(ElementReference elementRef)
+    {
+        infoFromJs = await JSRuntime.InvokeAsync<string>(
+             "getElementText", elementRef);
+        await speech.SynthesisToSpeakerAsync(infoFromJs);
+        return true;
+    }
+}
